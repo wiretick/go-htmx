@@ -1,6 +1,6 @@
 package logger
 
-import ("fmt")
+import "fmt"
 
 func Write(text string) string {
 	return fmt.Sprintf("Log: %s", text)

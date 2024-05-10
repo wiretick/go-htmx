@@ -11,7 +11,7 @@ func main() {
 	logger.Write("Starting the server on port 8000")
 
 	http.HandleFunc("GET /", func (w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello world")
+		fmt.Fprintf(w, "Hello world, from logger: %s", logger.Write("Serving on port 8000"))
 	})
 
 	http.ListenAndServe(":8000", nil)

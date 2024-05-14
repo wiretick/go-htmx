@@ -4,7 +4,44 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 )
+
+type Middleware func(http.Handler) http.Handler
+
+func CreateStack(xs ...Middleware) Middleware {
+	return func(next http.Handler) http.Handler {
+		for i := len(xs) - 1; i >= 0; i-- {
+			next = xs[i](next)
+		}
+
+		return next
+	}
+}
+
+type wrappedWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func (w *wrappedWriter) WriteHeader(statusCode int) {
+	w.ResponseWriter.WriteHeader(statusCode)
+	w.statusCode = statusCode
+}
+
+func Logging(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+
+		wrapped := &wrappedWriter{
+			ResponseWriter: w,
+			statusCode:     http.StatusOK,
+		}
+
+		next.ServeHTTP(wrapped, r)
+		log.Println(wrapped.statusCode, r.Method, r.URL.Path, time.Since(start))
+	})
+}
 
 type Post struct {
 	title string
@@ -68,9 +105,16 @@ func main() {
 	router.HandleFunc("GET /posts/{id}", getPost)
 	router.HandleFunc("POST /posts", createPost)
 
+	//v1 := http.NewServeMux()
+	//v1.Handle("/v1/", http.StripPrefix("/v1", router))
+
+	middlewares := CreateStack(
+		Logging,
+	)
+
 	server := http.Server{
 		Addr:    ":8000",
-		Handler: router,
+		Handler: middlewares(router),
 	}
 
 	log.Fatal(server.ListenAndServe())

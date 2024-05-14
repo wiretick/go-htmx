@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -14,23 +13,30 @@ type Post struct {
 
 func getPosts(w http.ResponseWriter, r *http.Request) {
 	for _, post := range posts {
-		_, err := fmt.Fprintf(w, "%s\n", post.body)
+		_, err := w.Write([]byte("\nPost: " + post.body + "\n"))
 		if err != nil {
 			return
 		}
 	}
 
-	fmt.Fprint(w, "\nAnother line of text\n")
+	w.Write([]byte("\nAnother line of text\n"))
 }
 
 func getPost(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Oops, needs to be a valid integer"))
 		return
 	}
 
-	// super safe way of doing things ;)
-	fmt.Fprint(w, posts[id])
+	if id < 0 || id >= len(posts) {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("Could not find what you are looking for"))
+		return
+	}
+
+	w.Write([]byte("Amazing content: " + posts[id].body))
 }
 
 func createPost(w http.ResponseWriter, r *http.Request) {
@@ -44,12 +50,11 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 }
 
 var posts []Post = []Post{
-	{title: "what", body: "whats"},
-	{title: "another", body: "body another"},
+	{title: "what", body: "whats long text"},
+	{title: "another", body: "body another longer text"},
 }
 
 func main() {
-	// Using custom ServeMux makes it possible to have multiple different routers
 	router := http.NewServeMux()
 
 	router.HandleFunc("GET /", getPosts)

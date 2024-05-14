@@ -11,6 +11,13 @@ type Post struct {
 	body  string
 }
 
+type Posts []Post
+
+func (p Posts) find(id int) Post {
+	// pretty useless, but can see how this could be a search function instead
+	return p[id]
+}
+
 func getPosts(w http.ResponseWriter, r *http.Request) {
 	for _, post := range posts {
 		_, err := w.Write([]byte("\nPost: " + post.body + "\n"))
@@ -36,7 +43,7 @@ func getPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte("Amazing content: " + posts[id].body))
+	w.Write([]byte("Amazing content: " + posts.find(id).body))
 }
 
 func createPost(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +56,7 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusSeeOther)
 }
 
-var posts []Post = []Post{
+var posts Posts = Posts{
 	{title: "what", body: "whats long text"},
 	{title: "another", body: "body another longer text"},
 }

@@ -52,7 +52,7 @@ func (w *adaptedWriter) WriteHeader(statusCode int) {
 }
 
 func Logging(next http.Handler) http.Handler {
-	// Basic middleware which writes some things to console
+	// Writes all the requests to console
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 
@@ -105,16 +105,10 @@ func (p Posts) find(id int) Post {
 
 func getPosts(w http.ResponseWriter, r *http.Request) error {
 	for _, post := range posts {
-		_, err := w.Write([]byte("\nPost: " + post.body + "\n"))
-		if err != nil {
-			return APIError{
-				Status: http.StatusInternalServerError,
-				Msg:    "Wtf happened",
-			}
+		if _, err := w.Write([]byte(post.title + ": " + post.body + "\n\n")); err != nil {
+			return err
 		}
 	}
-
-	w.Write([]byte("\nAnother line of text\n"))
 	return nil
 }
 
@@ -147,8 +141,8 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 }
 
 var posts Posts = Posts{
-	{title: "what", body: "whats long text"},
-	{title: "another", body: "body another longer text"},
+	{title: "What an adventure", body: "whats long text"},
+	{title: "Lorem ipsum title", body: "body another longer text"},
 }
 
 func main() {

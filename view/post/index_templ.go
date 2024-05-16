@@ -11,10 +11,10 @@ import "io"
 import "bytes"
 
 import (
-	"github.com/wiretick/go-htmx/types"
+	t "github.com/wiretick/go-htmx/types"
 )
 
-func Index(data types.PostPage) templ.Component {
+func Index(data t.PostPage) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -35,7 +35,7 @@ func Index(data types.PostPage) templ.Component {
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(post.Title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/post/index.templ`, Line: 10, Col: 18}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/post/index.templ`, Line: 10, Col: 19}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -48,7 +48,7 @@ func Index(data types.PostPage) templ.Component {
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(post.Body)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/post/index.templ`, Line: 11, Col: 16}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `view/post/index.templ`, Line: 11, Col: 17}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {

@@ -7,6 +7,9 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/wiretick/go-htmx/types"
+	"github.com/wiretick/go-htmx/view/post"
 )
 
 // Custom handler signature to return errors
@@ -91,24 +94,15 @@ func NotFound(err string) APIError {
 	}
 }
 
-type Post struct {
-	title string
-	body  string
-}
-
-type Posts []Post
-
-func (p Posts) find(id int) Post {
-	// pretty useless
-	return p[id]
-}
-
 func getPosts(w http.ResponseWriter, r *http.Request) error {
-	for _, post := range posts {
-		if _, err := w.Write([]byte(post.title + ": " + post.body + "\n\n")); err != nil {
-			return err
-		}
+	postPage := types.PostPage{
+		Posts: posts,
 	}
+
+	if err := post.Index(postPage).Render(r.Context(), w); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -122,7 +116,7 @@ func getPostById(w http.ResponseWriter, r *http.Request) error {
 		return NotFound("Could not find a post with the given ID")
 	}
 
-	if _, err := w.Write([]byte("Amazing content: " + posts.find(id).body)); err != nil {
+	if _, err := w.Write([]byte("Amazing content: " + posts.Find(id).Body)); err != nil {
 		// TODO: better with a server failed error
 		return InvalidRequest("Failed to write content")
 	}
@@ -134,15 +128,15 @@ func createPost(w http.ResponseWriter, r *http.Request) {
 	title := r.FormValue("title")
 	body := r.FormValue("body")
 
-	post := Post{title: title, body: body}
+	post := types.Post{Title: title, Body: body}
 	posts = append(posts, post)
 
 	w.WriteHeader(http.StatusSeeOther)
 }
 
-var posts Posts = Posts{
-	{title: "What an adventure", body: "whats long text"},
-	{title: "Lorem ipsum title", body: "body another longer text"},
+var posts types.Posts = types.Posts{
+	{Title: "What an adventure", Body: "whats long text"},
+	{Title: "Lorem ipsum title", Body: "body another longer text"},
 }
 
 func main() {

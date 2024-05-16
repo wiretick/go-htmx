@@ -87,14 +87,19 @@ func getPostById(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func createPost(w http.ResponseWriter, r *http.Request) {
+func createPost(w http.ResponseWriter, r *http.Request) error {
 	title := r.FormValue("title")
 	body := r.FormValue("body")
+
+	if len(title) > 30 {
+		return InvalidRequest("Title needs to be shorter than 30 characters")
+	}
 
 	post := types.Post{Title: title, Body: body}
 	posts = append(posts, post)
 
 	w.WriteHeader(http.StatusSeeOther)
+	return nil
 }
 
 var posts types.Posts = types.Posts{
@@ -108,7 +113,7 @@ func main() {
 
 	router.HandleFunc("GET /", Make(getPosts))
 	router.HandleFunc("GET /posts/{id}", Make(getPostById))
-	router.HandleFunc("POST /posts", createPost)
+	router.HandleFunc("POST /posts", Make(createPost))
 
 	m := middleware.Use(
 		middleware.Logging,

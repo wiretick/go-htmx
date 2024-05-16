@@ -6,7 +6,7 @@ import (
 
 templ Index(data t.PostPage) {
 	for _, post := range data.Posts {
-		<div>
+		<div hx-get="/posts">
 			<h3>{ post.Title }</h3>
 			<p>{ post.Body }</p>
 		</div>

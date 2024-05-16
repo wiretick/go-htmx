@@ -1,0 +1,15 @@
+package post
+
+import (
+	"github.com/wiretick/go-htmx/types"
+)
+
+templ Index(data types.PostPage) {
+	for _, post := range data.Posts {
+		<div>
+			<h3>{post.Title}</h3>
+			<p>{post.Body}</p>
+		</div>
+		<hr />
+	}
+}

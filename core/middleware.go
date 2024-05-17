@@ -1,4 +1,4 @@
-package middleware
+package core
 
 import (
 	"log"
@@ -8,7 +8,7 @@ import (
 
 type Middleware func(http.Handler) http.Handler
 
-func Use(xs ...Middleware) Middleware {
+func UseMiddleware(xs ...Middleware) Middleware {
 	return func(next http.Handler) http.Handler {
 		for i := len(xs) - 1; i >= 0; i-- {
 			next = xs[i](next)
@@ -28,7 +28,7 @@ func (w *adaptedWriter) WriteHeader(statusCode int) {
 	w.statusCode = statusCode
 }
 
-func Logging(next http.Handler) http.Handler {
+func LoggingMiddleware(next http.Handler) http.Handler {
 	// Writes all the requests to console
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()

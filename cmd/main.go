@@ -58,11 +58,7 @@ func NotFound(err string) APIError {
 }
 
 func getPosts(w http.ResponseWriter, r *http.Request) error {
-	postPage := types.PostPage{
-		Posts: posts,
-	}
-
-	if err := post.Index(postPage).Render(r.Context(), w); err != nil {
+	if err := post.Index(posts).Render(r.Context(), w); err != nil {
 		return err
 	}
 
@@ -79,9 +75,8 @@ func getPostById(w http.ResponseWriter, r *http.Request) error {
 		return NotFound("Could not find a post with the given ID")
 	}
 
-	if _, err := w.Write([]byte("Amazing content: " + posts.Find(id).Body)); err != nil {
-		// TODO: better with a server failed error
-		return InvalidRequest("Failed to write content")
+	if err := post.Show(posts[id]).Render(r.Context(), w); err != nil {
+		return err
 	}
 
 	return nil
@@ -91,8 +86,8 @@ func createPost(w http.ResponseWriter, r *http.Request) error {
 	title := r.FormValue("title")
 	body := r.FormValue("body")
 
-	if len(title) > 30 {
-		return InvalidRequest("Title needs to be shorter than 30 characters")
+	if len(title) > 20 {
+		return InvalidRequest("Title needs to be shorter than 20 characters")
 	}
 
 	post := types.Post{Title: title, Body: body}

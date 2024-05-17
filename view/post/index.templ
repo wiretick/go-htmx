@@ -1,15 +1,26 @@
 package post
 
 import (
+	"fmt"
 	t "github.com/wiretick/go-htmx/types"
 )
 
-templ Index(data t.PostPage) {
-	for _, post := range data.Posts {
-		<div hx-get="/posts">
-			<h3>{ post.Title }</h3>
-			<p>{ post.Body }</p>
+templ Index(posts []t.Post) {
+	<div>
+	for i, p := range posts {
+		<div>
+			<a href={ templ.URL(fmt.Sprintf("/posts/%d", i)) }>
+				<h3>{ p.Title }</h3>
+			</a>
 		</div>
-		<hr/>
 	}
+	</div>
+}
+
+templ Show(p t.Post) {
+	<div>
+		<a href="/posts">Go back</a>
+		<h3>{ p.Title }</h3>
+		<p>{ p.Body }</p>
+	</div>
 }

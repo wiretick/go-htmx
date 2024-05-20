@@ -6,5 +6,5 @@ type Post struct {
 }
 
 func NewPost(body string) Post {
-	return Post{Id: 1, Body: body}
+	return Post{Body: body}
 }

@@ -9,7 +9,7 @@ type APIError struct {
 
 func (e APIError) Error() string {
 	// Need this Error() to make APIError compatible with the error interface
-	return ""
+	return e.Msg
 }
 
 func InvalidRequestError(err string) APIError {

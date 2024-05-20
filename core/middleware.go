@@ -8,6 +8,11 @@ import (
 
 type Middleware func(http.Handler) http.Handler
 
+type adaptedWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
+
 func UseMiddleware(xs ...Middleware) Middleware {
 	return func(next http.Handler) http.Handler {
 		for i := len(xs) - 1; i >= 0; i-- {
@@ -16,11 +21,6 @@ func UseMiddleware(xs ...Middleware) Middleware {
 
 		return next
 	}
-}
-
-type adaptedWriter struct {
-	http.ResponseWriter
-	statusCode int
 }
 
 func (w *adaptedWriter) WriteHeader(statusCode int) {

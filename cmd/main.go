@@ -2,27 +2,20 @@ package main
 
 import (
 	"log"
-	"net/http"
 
 	"github.com/wiretick/go-htmx/core"
-	"github.com/wiretick/go-htmx/handlers"
 )
 
 func main() {
-	router := http.NewServeMux()
-
-	router.HandleFunc("GET /", core.APIHandler(handlers.HandleGetPosts))
-	router.HandleFunc("GET /posts/{id}", core.APIHandler(handlers.HandleGetPostByID))
-	router.HandleFunc("POST /posts", core.APIHandler(handlers.HandleCreatePost))
-
-	m := core.UseMiddleware(
-		core.LoggingMiddleware,
-	)
-
-	server := http.Server{
-		Addr:    ":8000",
-		Handler: m(router),
+	store, err := core.NewPostgresStore()
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	log.Fatal(server.ListenAndServe())
+	if err := store.Init(); err != nil {
+		log.Fatal(err)
+	}
+
+	server := NewAPIServer(":8000", store)
+	server.Run()
 }

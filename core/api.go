@@ -2,6 +2,7 @@ package core
 
 import (
 	"encoding/json"
+	"log"
 	"log/slog"
 	"net/http"
 )
@@ -9,8 +10,8 @@ import (
 type APIFunc func(w http.ResponseWriter, r *http.Request) error
 
 func WriteJSON(w http.ResponseWriter, status int, v any) error {
-	w.WriteHeader(status)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status) // Needs to be after the other Header() stuff, since reasons of ResponseWriter
 	return json.NewEncoder(w).Encode(v)
 }
 

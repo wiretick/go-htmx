@@ -25,11 +25,19 @@ func NewPostgresStore() (*PostgresStore, error) {
 		return nil, err
 	}
 
+	if err := db.Ping(); err != nil {
+		return nil, err
+	}
+
 	return &PostgresStore{db: db}, nil
 }
 
 func (s *PostgresStore) Init() error {
-	return s.createPostTable()
+	if err := s.createPostTable(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *PostgresStore) createPostTable() error {

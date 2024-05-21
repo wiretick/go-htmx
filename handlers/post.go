@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -46,21 +45,18 @@ func HandleGetPosts(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func HandleGetPostByID(w http.ResponseWriter, r *http.Request) error {
-	_, err := strconv.Atoi(r.PathValue("id"))
+func (s *APIServer) HandleGetPostByID(w http.ResponseWriter, r *http.Request) error {
+	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		return core.InvalidRequestError("Must provide valid integer for post ID")
 	}
 
-	//if id < 0 || id >= len(posts) {
-	//	return core.NotFoundError("Could not find a post with the given ID")
-	//}
+	post, err := s.store.GetPostByID(id)
+	if err != nil {
+		return err
+	}
 
-	//if err := core.WriteJSON(w, http.StatusOK, posts[id]); err != nil {
-	//	return err
-	//}
-
-	return nil
+	return core.WriteJSON(w, http.StatusOK, post)
 }
 
 func (s *APIServer) HandleCreatePost(w http.ResponseWriter, r *http.Request) error {
@@ -93,11 +89,11 @@ func NewAPIServer(listenAddr string, store core.Storage) *APIServer {
 	}
 }
 
-func (s *APIServer) Run() {
+func (s *APIServer) Run() error {
 	router := http.NewServeMux()
 
 	router.HandleFunc("GET /", core.APIHandler(HandleGetPosts))
-	router.HandleFunc("GET /posts/{id}", core.APIHandler(HandleGetPostByID))
+	router.HandleFunc("GET /posts/{id}", core.APIHandler(s.HandleGetPostByID))
 	router.HandleFunc("POST /posts", core.APIHandler(s.HandleCreatePost))
 
 	m := core.UseMiddleware(
@@ -109,5 +105,5 @@ func (s *APIServer) Run() {
 		Handler: m(router),
 	}
 
-	log.Fatal(server.ListenAndServe())
+	return server.ListenAndServe()
 }

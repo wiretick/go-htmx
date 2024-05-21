@@ -9,6 +9,7 @@ import (
 )
 
 type Storage interface {
+	GetPostByID(id int) (*data.Post, error)
 	CreatePost(*data.Post) error
 }
 
@@ -21,7 +22,7 @@ func NewPostgresStore() (*PostgresStore, error) {
 	connStr := "postgres://postgres:gohtmx@localhost/postgres?sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
-		return &PostgresStore{}, err
+		return nil, err
 	}
 
 	return &PostgresStore{db: db}, nil
@@ -42,6 +43,18 @@ func (s *PostgresStore) createPostTable() error {
 
 	_, err := s.db.Exec(query)
 	return err
+}
+
+func (s *PostgresStore) GetPostByID(id int) (*data.Post, error) {
+	var post *data.Post
+
+	query := `SELECT * FROM posts WHERE id=$1`
+	if err := s.db.QueryRow(query, id).Scan(post); err != nil {
+		return nil, err
+	}
+
+	log.Println("Post: ", post)
+	return post, nil
 }
 
 func (s *PostgresStore) CreatePost(post *data.Post) error {

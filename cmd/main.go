@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/wiretick/go-htmx/core"
+	"github.com/wiretick/go-htmx/handlers"
 )
 
 func main() {
@@ -16,6 +17,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	server := NewAPIServer(":8000", store)
-	server.Run()
+	server := handlers.NewAPIServer(":8000", store)
+	log.Fatal(server.Run())
 }

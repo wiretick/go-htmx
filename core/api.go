@@ -2,7 +2,6 @@ package core
 
 import (
 	"encoding/json"
-	"log"
 	"log/slog"
 	"net/http"
 )
@@ -23,8 +22,6 @@ func APIHandler(h APIFunc) http.HandlerFunc {
 		if err := h(w, r); err != nil {
 			// TODO: consider trying errors.As() or .Is() later
 			if apiErr, ok := err.(APIError); ok {
-				//w.WriteHeader(apiErr.Status)
-				//w.Write([]byte("Error: " + apiErr.Msg))
 				WriteJSON(w, apiErr.Status, apiErr)
 				slog.Error("API", "detail", apiErr.Msg)
 			} else {

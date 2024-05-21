@@ -1,4 +1,4 @@
-package handlers
+package main
 
 import (
 	"encoding/json"
@@ -6,9 +6,6 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-
-	"github.com/wiretick/go-htmx/core"
-	"github.com/wiretick/go-htmx/data"
 )
 
 type ThirdPartyResponse struct {
@@ -21,7 +18,7 @@ func thirdPartyApiCall() (string, error) {
 	return "data retrieved", nil
 }
 
-func HandleGetPosts(w http.ResponseWriter, r *http.Request) error {
+func (s *APIServer) HandleGetPosts(w http.ResponseWriter, r *http.Request) error {
 	resCh := make(chan ThirdPartyResponse)
 
 	go func() {
@@ -40,49 +37,53 @@ func HandleGetPosts(w http.ResponseWriter, r *http.Request) error {
 		return res.err
 	}
 
-	fmt.Println(res.val)
+	posts, err := s.store.GetPosts()
+	if err != nil {
+		return err
+	}
 
-	return nil
+	return WriteJSON(w, http.StatusOK, posts)
 }
 
 func (s *APIServer) HandleGetPostByID(w http.ResponseWriter, r *http.Request) error {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		return core.InvalidRequestError("Must provide valid integer for post ID")
+		return InvalidRequestError("Must provide valid integer for post ID")
 	}
 
 	post, err := s.store.GetPostByID(id)
 	if err != nil {
-		return err
+		fmt.Println(err.Error())
+		return WriteJSON(w, http.StatusNotFound, nil)
 	}
 
-	return core.WriteJSON(w, http.StatusOK, post)
+	return WriteJSON(w, http.StatusOK, post)
 }
 
 func (s *APIServer) HandleCreatePost(w http.ResponseWriter, r *http.Request) error {
-	newPost := &data.CreatePostRequest{}
+	newPost := &CreatePostRequest{}
 	if err := json.NewDecoder(r.Body).Decode(newPost); err != nil {
 		return err
 	}
 
 	if len(newPost.Body) > 200 {
-		return core.InvalidRequestError("Body needs to be shorter than 200 characters")
+		return InvalidRequestError("Body needs to be shorter than 200 characters")
 	}
 
-	post := data.NewPost(newPost.Body)
+	post := NewPost(newPost.Body)
 	if err := s.store.CreatePost(post); err != nil {
 		return err
 	}
 
-	return core.WriteJSON(w, http.StatusOK, post)
+	return WriteJSON(w, http.StatusOK, post)
 }
 
 type APIServer struct {
 	listenAddr string
-	store      core.Storage
+	store      Storage
 }
 
-func NewAPIServer(listenAddr string, store core.Storage) *APIServer {
+func NewAPIServer(listenAddr string, store Storage) *APIServer {
 	return &APIServer{
 		listenAddr: listenAddr,
 		store:      store,
@@ -92,12 +93,12 @@ func NewAPIServer(listenAddr string, store core.Storage) *APIServer {
 func (s *APIServer) Run() error {
 	router := http.NewServeMux()
 
-	router.HandleFunc("GET /", core.APIHandler(HandleGetPosts))
-	router.HandleFunc("GET /posts/{id}", core.APIHandler(s.HandleGetPostByID))
-	router.HandleFunc("POST /posts", core.APIHandler(s.HandleCreatePost))
+	router.HandleFunc("GET /", APIHandler(s.HandleGetPosts))
+	router.HandleFunc("GET /posts/{id}", APIHandler(s.HandleGetPostByID))
+	router.HandleFunc("POST /posts", APIHandler(s.HandleCreatePost))
 
-	m := core.UseMiddleware(
-		core.LoggingMiddleware,
+	m := UseMiddleware(
+		LoggingMiddleware,
 	)
 
 	server := http.Server{
